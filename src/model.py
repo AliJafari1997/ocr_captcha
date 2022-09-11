@@ -62,7 +62,61 @@ def residual_block(x: Tensor, downsample: bool, filters: int, kernel_size: Optio
 
 
 
-def build_model(char_to_num:Tensor):
+def relu_bn(inputs: Tensor) -> Tensor:
+    """
+    applies ReLU activation function and BatchNormalization sequentially to the inputs
+
+    Args:
+        inputs (Tensor): input tensor that we want to apply ReLU Activation Function, and Batchnormalization layer to it
+
+    Returns:
+        Tensor: Tensor after applying ReLU Activation Function, and Batchnormalization layer to the input tensor
+    """    
+    relu = layers.ReLU()(inputs)
+    bn = layers.BatchNormalization()(relu)
+    return bn
+
+def residual_block(x: Tensor, downsample: bool, filters: int, kernel_size: Optional[int] = 3) -> Tensor:
+    """
+    this block consists of 2 convolutional layers in the main path with defined filter_size, and another convolutional layer with filter_size=1 in skip_connection path,
+    which facilitates the flow of gradient, leading to prevention of gradient vanishing problems in deep neural networks. finally we add the results from these two pathes.
+
+    Args:
+        x (Tensor): input Tensor to the residual block
+        downsample (bool): if downsample=True, that means the stride size in first convolutions layer will be 2, otherwise it will be 1
+        filters (int): shows number of filters that we want to apply
+        kernel_size Optional[int] shows size of kernel. Defaults to 3.
+
+    Returns:
+        Tensor: output of the residual block after applying convolution, batchnormalization, and activation layers to the initial featuremap
+    """    
+    # first convolution layer that we want to apply in residual_block. if downsample=True, that means strides will be 2 in this layer, otherwise strides will be 1
+    y = layers.Conv2D(kernel_size=kernel_size,
+               strides= 1,
+               filters=filters, padding='same')(x)
+    # after each convolution layer, we apply batchnormalization layer, and activation function in this residual block
+    y = relu_bn(y)
+    # second convolutional layer in the main path with strides=1
+    y = layers.Conv2D(kernel_size=kernel_size,
+               strides=1,
+               filters=filters, padding='same')(y)
+
+    # stride of this convolutional layer in the skip connection path will be 2 if downsample=True, otherwise strides will be 1
+    x = layers.Conv2D(kernel_size=1,
+                   strides=1,
+                   filters=filters)(x)
+    # finally we add the result from the main path with the output of the skip connection path
+    out = layers.Add()([x, y])
+    # finally perform relu activation function, and batchnormalizatin layer to the output of the former featuremap
+    out = relu_bn(out)
+    if downsample:
+        out = layers.MaxPooling2D((2, 2))(out)
+
+    return out
+
+
+
+def build_model(char_to_num):
     # Inputs to the model
     input_img = layers.Input(
         shape=(utils.img_width, utils.img_height, 1), name="image", dtype="float32"
