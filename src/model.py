@@ -78,15 +78,11 @@ def build_model(char_to_num:Tensor):
     labels = layers.Input(name="label", shape=(None,), dtype="float32")
 
     x = residual_block(input_img, downsample=True, filters=32, kernel_size=3)
-    print(x.shape)
     x = residual_block(x, downsample=False, filters=32, kernel_size=3)
-    print(x.shape)
 
     x = residual_block(x, downsample=True, filters=64, kernel_size=3)
-    print(x.shape)
 
     x = residual_block(x, downsample=False, filters=64, kernel_size=3)
-    print(x.shape)
     # First conv block
           
 
