@@ -61,53 +61,33 @@ def residual_block(x: Tensor, downsample: bool, filters: int, kernel_size: Optio
 
 
 
-
-
-def build_model(char_to_num:Tensor)->Model:
-    """
-
-    Args:
-        char_to_num (Tensor): Tensor of integer indices
-
-    Returns:
-        Model: functional model which consists of CNN and RNN layers
-    """    
-
+def build_model():
     # Inputs to the model
     input_img = layers.Input(
         shape=(utils.img_width, utils.img_height, 1), name="image", dtype="float32"
     )
     labels = layers.Input(name="label", shape=(None,), dtype="float32")
 
+    x = residual_block(input_img, downsample=True, filters=32, kernel_size=3)
+    print(x.shape)
+    x = residual_block(x, downsample=False, filters=32, kernel_size=3)
+    print(x.shape)
+
+    x = residual_block(x, downsample=True, filters=64, kernel_size=3)
+    print(x.shape)
+
+    x = residual_block(x, downsample=False, filters=64, kernel_size=3)
+    print(x.shape)
     # First conv block
-    x = layers.Conv2D(
-        32,
-        (3, 3),
-        activation="relu",
-        kernel_initializer="he_normal",
-        padding="same",
-        name="Conv1",
-    )(input_img)
-    x = layers.MaxPooling2D((2, 2), name="pool1")(x)
+          
 
-    # Second conv block
-    x = layers.Conv2D(
-        64,
-        (3, 3),
-        activation="relu",
-        kernel_initializer="he_normal",
-        padding="same",
-        name="Conv2",
-    )(x)
-    x = layers.MaxPooling2D((2, 2), name="pool2")(x)            
-
-    # We have used two max pool with pool size and strides 2.
+    # We have used two residual blocks with and strides = 2.
     # Hence, downsampled feature maps are 4x smaller. The number of
     # filters in the last layer is 64. Reshape accordingly before
     # passing the output to the RNN part of the model
     new_shape = ((utils.img_width // 4), (utils.img_height // 4) * 64)
     x = layers.Reshape(target_shape=new_shape, name="reshape")(x)
-    x = layers.Dense(64, activation="relu", name="dense1")(x)              # shape = (batch_size, time_step = img_width, channels = 64)
+    x = layers.Dense(64, activation="relu", name="dense1")(x)
     x = layers.Dropout(0.2)(x)
 
     # RNNs
@@ -118,18 +98,11 @@ def build_model(char_to_num:Tensor)->Model:
     x = layers.Dense(
         len(char_to_num.get_vocabulary()) + 1, activation="softmax", name="dense2"
     )(x)
-    # [UKN], others characters + 1 : 1+ 19 + 1 -> 21        shape: (batch_size, time_step = img_width = 50, channels = 21)
-
 
     # Add CTC layer for calculating CTC loss at each step
     output = utils.CTCLayer(name="ctc_loss")(labels, x)
 
     # Define the model
     model = keras.models.Model(
-        inputs=[input_img, labels], outputs=output, name="ocr_model_v1"
-    )
-    # Optimizer
-    opt = keras.optimizers.Adam()
-    # Compile the model and return
-    model.compile(optimizer=opt)
+        inputs=[input_img, labels], outputs=output, name="ocr_model_v1")
     return model
