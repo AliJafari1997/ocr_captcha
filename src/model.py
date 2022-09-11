@@ -5,6 +5,7 @@ from tensorflow.keras import layers
 import utils
 from typing import Optional
 from keras.models import Model
+from tensorflow import Tensor
 
 def relu_bn(inputs: Tensor) -> Tensor:
     """
@@ -61,7 +62,7 @@ def residual_block(x: Tensor, downsample: bool, filters: int, kernel_size: Optio
 
 
 
-def build_model():
+def build_model(char_to_num:Tensor):
     # Inputs to the model
     input_img = layers.Input(
         shape=(utils.img_width, utils.img_height, 1), name="image", dtype="float32"
