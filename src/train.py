@@ -193,7 +193,7 @@ def fit_model(model:Model):
         k.trainable = False
 
     # Don't forget to re-compile the model
-    model.compile(optimizer=opt, lr=1e-6)
+    model.compile(optimizer=opt)
     model.fit(test_dataset,epochs=1)
 
     # contains information related to loss, val_loss, and learning_rate value
