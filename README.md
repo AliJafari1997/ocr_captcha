@@ -9,7 +9,7 @@ This is a simple keras implementation for captcha recognition with CNN and LSTM.
 
 changing directory to the main directory
 ```
-cd captcha_ocr/src
+cd ocr_captcha/src
 ```
 download data from google drive:
 ```
