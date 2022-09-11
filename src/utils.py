@@ -25,8 +25,7 @@ csv_path:str = "./files/data.csv"     # model metrics are saved in a file with t
 # you must use the command mkdir files to use these callbacks
 my_callbacks:callbacks = [
         callbacks.CSVLogger(csv_path),              # callback for saving metrics and loss in csv
-        callbacks.TensorBoard(),   
-        callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.25, patience=5, min_lr=1e-6, verbose=1),  # callback for  decreasing learning rate according to defined circumstances                 
+        callbacks.TensorBoard(),                  
         callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False)               # callback for stopping whenever validation_loss doesn't decrease for 50 epochs
     ]  
 
