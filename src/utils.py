@@ -26,7 +26,7 @@ csv_path:str = "./files/data.csv"     # model metrics are saved in a file with t
 my_callbacks:callbacks = [
         callbacks.CSVLogger(csv_path),              # callback for saving metrics and loss in csv
         callbacks.TensorBoard(),                  
-        callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=False)               # callback for stopping whenever validation_loss doesn't decrease for 50 epochs
+        callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=False)               # callback for stopping whenever validation_loss doesn't decrease for 50 epochs
     ]  
 
 def split_data(images: List[np.ndarray], labels:List[np.ndarray], train_size:float=0.9)->Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
